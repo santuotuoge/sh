@@ -4,7 +4,6 @@ docker 运行 ubuntu:22.04
 
 ```bash
 docker pull ubuntu:22.04
-//运行容器
 docker run -it --name ubuntu-airchains ubuntu:22.04 /bin/bash
 ```
 run
