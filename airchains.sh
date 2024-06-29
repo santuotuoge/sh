@@ -5,12 +5,13 @@ system_local=$(uname -m)
 echo "当前系统： $system_local"
 
 function install_go_version() {
-if [ "$system_local" == "x86_64" ]; then
-    wget https://dl.google.com/go/go1.22.1.linux-amd64.tar.gz
-    tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
-else [ "$system_local" == "aarch64" ]; then
-   # 如果是 arm64 架构
+if [ "$system_local" == "aarch64" ]
+then
+     # 如果是 arm64 架构
     wget https://dl.google.com/go/go1.22.4.linux-arm64.tar.gz
+    tar -C /usr/local -xzf go1.22.4.linux-arm64.tar.gz
+else
+    wget https://dl.google.com/go/go1.22.1.linux-amd64.tar.gz
     tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
 fi
 }
@@ -112,6 +113,8 @@ function run_station() {
 
   if [ "$system_local" == "aarch64" ]; then
     go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
+    export GOBIN=$GOPATH/bin
+    export PATH=$GOBIN:$PATH
   else
       wget https://github.com/airchains-network/tracks/releases/download/v0.0.2/eigenlayer
       chmod +x eigenlayer
@@ -136,7 +139,7 @@ function run_station() {
   output=$(go run cmd/main.go keys junction --accountName $accountName --accountPath $HOME/.tracks/junction-accounts/keys)
 
   address=$(echo "$output" | grep -oP '(?<=Address: ).*')
-  echo "钱包信息"
+  echo "！！！！！！！！！！！！钱包信息，请备份私钥相关信息！！！！！！！！！！！！"
   echo $output
   echo "领水地址: $address"
 
@@ -153,8 +156,7 @@ function run_station() {
       exit 1
   fi
   go run cmd/main.go prover v1WASM
-  nodeid=$(grep "node_id" ~/.tracks/config/sequencer.toml | awk -F '"' '{print $2}'
-  })
+  nodeid=$(cat ~/.tracks/config/sequencer.toml | grep node_id | awk -F '"' '{print $2}')
   ip=$(curl -s4 ifconfig.me/ip)
   bootstrapNode=/ip4/$ip/tcp/2300/p2p/$nodeid
   echo $bootstrapNode
