@@ -1,6 +1,20 @@
 #!/bin/bash
 
 
+system_local=$(uname -m)
+echo "当前系统： $system_local"
+
+function install_go_version() {
+if [ "$system_local" == "x86_64" ]; then
+    wget https://dl.google.com/go/go1.22.1.linux-amd64.tar.gz
+    tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
+else [ "$system_local" == "aarch64" ]; then
+   # 如果是 arm64 架构
+    wget https://dl.google.com/go/go1.22.4.linux-arm64.tar.gz
+    tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
+fi
+}
+
 function install_all() {
   echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>安装环境<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   apt-get update
@@ -23,8 +37,7 @@ function install_all() {
   if ! command -v go &> /dev/null
   then
       echo "Go is not installed. Installing Go..."
-      wget https://dl.google.com/go/go1.22.4.linux-amd64.tar.gz
-      tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
+      install_go_version
   else
       echo "Go is already installed."
   fi
@@ -51,6 +64,8 @@ function install_all() {
       echo "curl is already installed."
   fi
 }
+
+
 
 function env() {
   echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>配置go环境<<<<<<<<<<<<<<<<<<<<<<<<<<<"
@@ -84,7 +99,7 @@ function run_wasm() {
   go mod tidy
   echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>设置wasm-station<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   nohup /bin/bash ./scripts/local-setup.sh > /setup.log 2>&1 &
-  sleep 300
+  sleep 100
   cat /setup.log
   echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>运行wasmstationd<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   nohup $HOME/wasm-station/build/wasmstationd start --api.enable > wasmstationd.log 2>&1 &
@@ -95,9 +110,14 @@ function run_station() {
   accountName="default-node"
   keyName="ttg"
 
-  wget https://github.com/airchains-network/tracks/releases/download/v0.0.2/eigenlayer
-  chmod +x eigenlayer
-  mv eigenlayer /usr/local/bin/eigenlayer
+  if [ "$system_local" == "aarch64" ]; then
+    go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
+  else
+      wget https://github.com/airchains-network/tracks/releases/download/v0.0.2/eigenlayer
+      chmod +x eigenlayer
+      mv eigenlayer /usr/local/bin/eigenlayer
+  fi
+
   echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>输出Public Key hex<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
   public_key_hex=$(echo "password" | eigenlayer operator keys create -insecure --key-type ecdsa $keyName |grep 'Public Key hex')
@@ -116,7 +136,8 @@ function run_station() {
   output=$(go run cmd/main.go keys junction --accountName $accountName --accountPath $HOME/.tracks/junction-accounts/keys)
 
   address=$(echo "$output" | grep -oP '(?<=Address: ).*')
-
+  echo "钱包信息"
+  echo $output
   echo "领水地址: $address"
 
   echo "前往https://airchains.faucetme.pro领水"
@@ -132,14 +153,15 @@ function run_station() {
       exit 1
   fi
   go run cmd/main.go prover v1WASM
-  nodeid=$(grep "node_id" ~/.tracks/config/sequencer.toml | awk -F '"' '{print $2}')
+  nodeid=$(grep "node_id" ~/.tracks/config/sequencer.toml | awk -F '"' '{print $2}'
+  })
   ip=$(curl -s4 ifconfig.me/ip)
   bootstrapNode=/ip4/$ip/tcp/2300/p2p/$nodeid
   echo $bootstrapNode
   go run cmd/main.go create-station --accountName $accountName  --accountPath $HOME/.tracks/junction-accounts/keys --jsonRPC "https://junction-testnet-rpc.synergynodes.com/" --info "WASM Track" --tracks $address --bootstrapNode "$bootstrapNode"
 
   nohup go run cmd/main.go start > logfile.log 2>&1 &
-
+  echo "启动成功"
 }
 
 function system_start() {
