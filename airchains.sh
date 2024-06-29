@@ -160,7 +160,7 @@ function run_station() {
   ip=$(curl -s4 ifconfig.me/ip)
   bootstrapNode=/ip4/$ip/tcp/2300/p2p/$nodeid
   echo $bootstrapNode
-  go run cmd/main.go create-station --accountName $accountName  --accountPath $HOME/.tracks/junction-accounts/keys --jsonRPC "https://junction-testnet-rpc.synergynodes.com/" --info "WASM Track" --tracks $address --bootstrapNode "$bootstrapNode"
+  go run cmd/main.go create-station --accountName $accountName  --accountPath $HOME/.tracks/junction-accounts/keys --jsonRPC "https://airchains-rpc.tws.im/" --info "WASM Track" --tracks $address --bootstrapNode "$bootstrapNode"
 
   nohup go run cmd/main.go start > logfile.log 2>&1 &
   echo "启动成功"
