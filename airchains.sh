@@ -5,15 +5,15 @@ system_local=$(uname -m)
 echo "当前系统： $system_local"
 
 function install_go_version() {
-if [ "$system_local" == "aarch64" ]
-then
+  if [ "$system_local" == "aarch64" ]
+  then
      # 如果是 arm64 架构
-    wget https://dl.google.com/go/go1.22.4.linux-arm64.tar.gz
-    tar -C /usr/local -xzf go1.22.4.linux-arm64.tar.gz
-else
-    wget https://dl.google.com/go/go1.22.1.linux-amd64.tar.gz
-    tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
-fi
+     wget https://dl.google.com/go/go1.22.4.linux-arm64.tar.gz
+     tar -C /usr/local -xzf go1.22.4.linux-arm64.tar.gz
+  else
+     wget https://dl.google.com/go/go1.22.1.linux-amd64.tar.gz
+     tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
+  fi
 }
 
 function install_all() {
