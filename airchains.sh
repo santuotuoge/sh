@@ -11,7 +11,7 @@ function install_go_version() {
      wget https://dl.google.com/go/go1.22.4.linux-arm64.tar.gz
      tar -C /usr/local -xzf go1.22.4.linux-arm64.tar.gz
   else
-     wget https://dl.google.com/go/go1.22.1.linux-amd64.tar.gz
+     wget https://dl.google.com/go/go1.22.4.linux-amd64.tar.gz
      tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
   fi
 }
